@@ -18,8 +18,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
-class SceneObject;
-
 class Command {
 
 	enum CmdElementType{
@@ -33,7 +31,7 @@ class Command {
 		CmdElement * parent = nullptr;
 		std::vector<CmdElement*> storage;
 		CmdElement(){
-			
+		
 		}
 		~CmdElement(){
 			for( CmdElement * e : storage )
@@ -139,7 +137,7 @@ class Command {
 				if( depth == 0 ){
 					ret->storage.push_back( parseTokenList( tl, subStart, i) );
 				} else if( depth < 0 )
-					std::cout << "found an unmatched close braket.";
+					std::cout << "found an unmatched close braket.\n";
 				
 			} else {
 				if( ret->type == CmdElementType::list ){
@@ -176,15 +174,18 @@ public:
 	}
 	
 	std::string text(){
-		std::string text = type();
+		return type() + " " + m_head->text();
 	}
 	
 	template <typename T>
 	T getValueAt( const std::string path ){
 		std::vector<std::string> pathList;
-		boost::split( pathList, path, boost::is_any_of("/"), boost::token_compress_on );
+		boost::split(
+			pathList, path, boost::is_any_of("/"), boost::token_compress_on
+			);
 		CmdElement * runner = m_head;
 		for( auto e : pathList ){
+			//std::cout << "looking at " << e << "\n"; 
 			if( runner == nullptr ){
 				std::cout << "Couldn't find anything at " << path << std::endl;
 				return 0;
@@ -198,11 +199,12 @@ public:
 			} else if( runner->type == CmdElementType::list ){
 				int index = boost::lexical_cast<int>( e );
 				runner = runner->storage[ index ];
-				break;
+				//break;
 			} else {
 				std::cout << "hope this e is the last one in pathList, or we fucked up";
 			}
 		}
+		return runner->value;
 	}
 	
 };
