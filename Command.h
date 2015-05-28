@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 Cory Knapp. All rights reserved.
 //
 
-#ifndef __now__Command__
-#define __now__Command__
+#ifndef __SimpleCommandParser__Command__
+#define __SimpleCommandParser__Command__
 
 #include <stdio.h>
 #include <map>
