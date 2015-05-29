@@ -8,6 +8,7 @@
 #include <iostream>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
 
 class Command {
 
@@ -199,7 +200,17 @@ public:
 	}
 	
 	template <typename T>
-	T * getValueAt( const std::string path ){
+	boost::optional<T> getValueAt( const std::string &path ){
+		std::string * val = getStringAt( path );
+		if( val )
+			return boost::make_optional(
+				boost::lexical_cast<T>( *val )
+			);
+		else 
+			return boost::optional<T>();
+	}
+
+	std::string * getStringAt( const std::string path ){
 		std::vector<std::string> pathList;
 		boost::split(
 			pathList, path, boost::is_any_of("/"), boost::token_compress_on
@@ -230,4 +241,4 @@ public:
 	
 };
 
-#indif /* defined(__now__Command__) */
+#endif /* defined(__now__Command__) */
