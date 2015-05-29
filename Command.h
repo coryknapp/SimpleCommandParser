@@ -19,7 +19,6 @@ class Command {
 	public:
 		CmdElementType type;
 		std::string value;
-		CmdElement * parent = nullptr;
 		std::vector<CmdElement*> storage;
 		CmdElement(){
 		
