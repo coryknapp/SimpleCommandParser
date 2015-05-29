@@ -13,7 +13,7 @@
 class Command {
 
 	enum CmdElementType{
-		list, map, value
+		list, map, value, mapKey
 	};
 	
 	class CmdElement {
@@ -36,22 +36,24 @@ class Command {
 		
 		}*/
 		std::string text(){
-			if( type == CmdElementType::value )
-				return value;
-			if( type == CmdElementType::list ){
-				std::string ret = "{ ";
-				for( auto e : storage ){
-					ret += e->text() + ", "; //TODO cut the last ", " in the ret
+			switch( type ){
+				case CmdElementType::value : case CmdElementType::mapKey :
+					return value;
+				case CmdElementType::list : {
+					std::string ret = "{ ";
+					for( auto e : storage ){
+						ret += e->text() + ", "; //TODO cut the last ", " in the ret
+					}
+					return ret + "} ";
 				}
-				return ret + "} ";
-			}
-			if( type == CmdElementType::map){
-				std::string ret = "[ ";
-				for( auto e : storage ){
-					ret += e->text() + ": "; //TODO cut the last ", " in the ret
-					ret += e->storage[0]->text() + ", ";
+				case CmdElementType::map : {
+					std::string ret = "[ ";
+					for( auto e : storage ){
+						ret += e->text() + ": "; //TODO cut the last ", " in the ret
+						ret += e->storage[0]->text() + ", ";
+					}
+					return ret + "] ";
 				}
-				return ret + "] ";
 			}
 		}
 	};
@@ -76,18 +78,24 @@ class Command {
 					break;
 				case ' ':
 					if( i != lastMark )
-						splitList.push_back( command.substr( lastMark, i-lastMark ) );
+						splitList.push_back(
+							command.substr( lastMark, i-lastMark )
+							);
 					lastMark = i+1; //skip the space
 					break;
 				case '[': case ']': case '{': case '}':
 					if( i != lastMark )
-						splitList.push_back( command.substr( lastMark, i-lastMark ) );
+						splitList.push_back(
+							command.substr( lastMark, i-lastMark )
+							);
 					splitList.push_back( command.substr(i,1) ); //push back the [{]}
 					lastMark = i+1; //skip the space
 					break;
 				case ':': case ',':
 					if( i != lastMark )
-						splitList.push_back( command.substr( lastMark, i-lastMark ) );
+						splitList.push_back(
+							command.substr( lastMark, i-lastMark )
+							);
 					// no need to push back the divider
 					lastMark = i+1; //skip the space
 					break;
@@ -96,16 +104,30 @@ class Command {
 			}
 		}
 		if( command.size() != lastMark )
-			splitList.push_back( command.substr( lastMark, command.size()-lastMark ) );
+			splitList.push_back(
+				command.substr( lastMark, command.size()-lastMark )
+				);
 		
 		return splitList;
 	};
 	
-	static CmdElement * parseTokenList( std::vector<std::string> tl, int start, int end){
+	static CmdElement * parseTokenList(
+		std::vector<std::string> tl, bool implicidList = false
+		){
+		int start = 0;
+		int end = 0; //
+		return parseTokenList_impl( tl, start, end ); //TODO add implicidList
+	}
+
+	static CmdElement * parseTokenList_impl(
+		std::vector<std::string> tl, int &start, int &end
+		){
+		
 		CmdElement * ret = new CmdElement();
 		if( tl[start] == "[" ){
 			//start a map
 			ret->type = CmdElementType::map;
+
 		} else if( tl[start] == "{" ){
 			//start a list
 			ret->type = CmdElementType::list;
@@ -119,32 +141,36 @@ class Command {
 			}
 			return ret;
 		}
-		int depth = 0;
-		int subStart;
+
 		// start at start+1 (we know the first element to be a type.)
-		for( int i = start+1; i < end; i++ ){
-			// If we're about to
+		// and run through the whole list, expecting to return before the end
+		for( int i = start+1; i < tl.size(); i++ ){
 			if(( tl[i] == "{" )||( tl[i] == "[" )){
-				if( depth == 0 )
-					subStart = 1;
-				depth++;
+				// we're opening a new list or map
+				int subEnd;
+				ret->storage.push_back( parseTokenList_impl( tl, i, subEnd ) );
+				i = subEnd;
 			} else if(( tl[i] == "}" )||( tl[i] == "]" )){
-				depth--;
-				if( depth == 0 ){
-					ret->storage.push_back( parseTokenList( tl, subStart, i) );
-				} else if( depth < 0 )
-					std::cout << "found an unmatched close braket.\n";
-				
+				// we've found the end out our list/map
+				end = i;
+				return ret;				
 			} else {
+				// we've found a value, or a key/value pair
 				if( ret->type == CmdElementType::list ){
-					ret->storage.push_back( parseTokenList( tl, i, i+1 ) );
+					CmdElement * valueElement = new CmdElement();
+					valueElement->type = CmdElementType::value;
+					valueElement->value = tl[i];
+					ret->storage.push_back( valueElement );
 				} else if( ret->type == CmdElementType::map ){
-					auto key = parseTokenList( tl, i, i+1 );
+					CmdElement * mapKey = new CmdElement();
+					CmdElement * mapValue = new CmdElement();
+					mapKey->value = tl[i];
 					i++;
-					auto value = parseTokenList( tl, i, i+1 );
-					key->storage.push_back( value );
-					value->parent = key;
-					ret->storage.push_back( key );
+					mapKey->type = CmdElementType::mapKey;
+					mapValue->value = tl[i];
+					mapValue->type = CmdElementType::value;
+					mapKey->storage.push_back( mapValue );
+					ret->storage.push_back( mapKey );
 				}
 			}
 			
@@ -161,8 +187,9 @@ public:
 	Command(const std::string &command){
 		std::vector<std::string> splitList = tokenize( command );
 		m_type = splitList[0];
-		for( auto e : splitList )
-		m_head = parseTokenList( splitList, 1, splitList.size() );
+		m_head = parseTokenList(
+			std::vector<std::string>( ++splitList.begin(), splitList.end() )
+			);
 	}
 	
 	virtual const std::string& type(){
