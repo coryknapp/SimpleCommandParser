@@ -83,7 +83,8 @@ class Command {
 					quoteMode = !quoteMode;
 					break;
 				case ' ':
-					splitList.push_back( command.substr( lastMark, i ) );
+					if( i != lastMark )
+						splitList.push_back( command.substr( lastMark, i-lastMark ) );
 					lastMark = i+1; //skip the space
 					break;
 				case '[': case ']': case '{': case '}':
@@ -121,13 +122,16 @@ class Command {
 			ret->type = CmdElementType::value;
 			ret->value = tl[start];
 			if( end - start > 1 ){
+				// TODO add an option to add implicit lists
 				std::cout << "Warning: values past the first are being ignored.\n";
 			}
 			return ret;
 		}
 		int depth = 0;
 		int subStart;
+		// start at start+1 (we know the first element to be a type.)
 		for( int i = start+1; i < end; i++ ){
+			// If we're about to
 			if(( tl[i] == "{" )||( tl[i] == "[" )){
 				if( depth == 0 )
 					subStart = 1;
