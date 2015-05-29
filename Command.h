@@ -20,6 +20,7 @@ class Command {
 		CmdElementType type;
 		std::string value;
 		std::vector<CmdElement*> storage;
+		
 		CmdElement(){
 		
 		}
@@ -27,12 +28,7 @@ class Command {
 			for( CmdElement * e : storage )
 				delete e;
 		}
-		/*CmdElement& operator = ( const CmdElement& other ) {
-			return *this;
-		}
-		CmdElement(const CmdElement& other) {
 		
-		}*/
 		std::string text(){
 			switch( type ){
 				case CmdElementType::value : case CmdElementType::mapKey :
@@ -114,11 +110,12 @@ class Command {
 		){
 		int start = 0;
 		int end = 0; //
-		return parseTokenList_impl( tl, start, end ); //TODO add implicidList
+		return parseTokenList_impl( tl, start, end, implicidList );
 	}
 
 	static CmdElement * parseTokenList_impl(
-		std::vector<std::string> tl, int &start, int &end
+		std::vector<std::string> tl, int &start, int &end,
+		bool implicidList = false
 		){
 		
 		CmdElement * ret = new CmdElement();
@@ -134,8 +131,11 @@ class Command {
 			ret->type = CmdElementType::value;
 			ret->value = tl[start];
 			if( end - start > 1 ){
-				// TODO add an option to add implicit lists
-				std::cout << "Warning: values past the first are being ignored.\n";
+				if( implicidList ){
+					std::cout << "implicid list not supported yet.\n";
+				} else { // TODO handle this better
+					std::cout << "Warning: values past the first are being ignored.\n";
+				}
 			}
 			return ret;
 		}
@@ -199,7 +199,7 @@ public:
 	}
 	
 	template <typename T>
-	T getValueAt( const std::string path ){
+	T * getValueAt( const std::string path ){
 		std::vector<std::string> pathList;
 		boost::split(
 			pathList, path, boost::is_any_of("/"), boost::token_compress_on
@@ -208,10 +208,9 @@ public:
 		for( auto e : pathList ){
 			//std::cout << "looking at " << e << "\n"; 
 			if( runner == nullptr ){
-				std::cout << "Couldn't find anything at " << path << std::endl;
-				return 0;
+				return nullptr;
 			} else if( runner->type == CmdElementType::map ){
-				for( auto subE : runner->storage ){
+				for( auto subE : runner->storage ){ // TODO search much smarter
 					if( subE->value == e ){
 						runner = subE->storage[0];
 						break;
@@ -221,14 +220,14 @@ public:
 				int index = boost::lexical_cast<int>( e );
 				runner = runner->storage[ index ];
 			} else {
-				//runner is a value
-				std::cout << "hope this e is the last one in pathList, or we fucked up";
-				return runner->value;
+				// runner is a value
+				// could this return the wrong thing?
+				return &(runner->value);
 			}
 		}
-		return runner->value;
+		return &(runner->value);
 	}
 	
 };
 
-#endif /* defined(__now__Command__) */
+#indif /* defined(__now__Command__) */
