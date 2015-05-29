@@ -1,11 +1,3 @@
-//
-//  Command.h
-//  now
-//
-//  Created by Cory Knapp on 12/23/14.
-//  Copyright (c) 2014 Cory Knapp. All rights reserved.
-//
-
 #ifndef __SimpleCommandParser__Command__
 #define __SimpleCommandParser__Command__
 
@@ -203,9 +195,10 @@ public:
 			} else if( runner->type == CmdElementType::list ){
 				int index = boost::lexical_cast<int>( e );
 				runner = runner->storage[ index ];
-				//break;
 			} else {
+				//runner is a value
 				std::cout << "hope this e is the last one in pathList, or we fucked up";
+				return runner->value;
 			}
 		}
 		return runner->value;
