@@ -10,14 +10,15 @@
 	} \
 }
 
+using namespace std;
 
 int main(int argc, char *argv[])
 {
-	std::string testString( "test { a , b , c , [foo : 1, bar : 2 ] }" );
-	std::cout << "running tests on Command with init string:" << std::endl
+	string testString( "test { a , b , c , [foo : 1, bar : 2 ] }" );
+	cout << "running tests on Command with init string:" << endl
 		<< "\t" << testString << std::endl;
 	Command testCmd( testString );
-	std::cout <<"Reseralizes as " << testCmd.text() << std::endl;
+	cout <<"Reseralizes as " << testCmd.text() << endl;
 
 	TEST( "type", testCmd.type(), "test" );
 	TEST( "get value at 1", testCmd.getValueAt<std::string>("1"), "b" );
@@ -25,6 +26,7 @@ int main(int argc, char *argv[])
 			testCmd.getValueAt<std::string>("3/foo"), "1" );
 	TEST(	"get value at 3/bar",
 			testCmd.getValueAt<std::string>("3/bar"), "2" );
+
 
 	return 0;
 }
