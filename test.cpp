@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
 			*testCmd.getStringAt("3/bar"), "2" );
 
 	string implicidListString = "test x y x";
-	 
+	Command * cmdPtr = new Command( implicidListString );
+	delete cmdPtr; 
 	return 0;
 }

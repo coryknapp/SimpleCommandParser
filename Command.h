@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <list>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
@@ -20,7 +21,7 @@ class Command {
 	public:
 		CmdElementType type;
 		std::string value;
-		std::vector<CmdElement*> storage;
+		std::list<CmdElement*> storage;
 		
 		CmdElement(){
 		
@@ -45,7 +46,7 @@ class Command {
 					std::string ret = "[ ";
 					for( auto e : storage ){
 						ret += e->text() + ": "; //TODO cut the last ", " in the ret
-						ret += e->storage[0]->text() + ", ";
+						ret += e->storage.front()->text() + ", ";
 					}
 					return ret + "] ";
 				}
@@ -223,7 +224,7 @@ public:
 			} else if( runner->type == CmdElementType::map ){
 				for( auto subE : runner->storage ){ // TODO search much smarter
 					if( subE->value == e ){
-						runner = subE->storage[0];
+						runner = subE->storage.front();
 						break;
 					}
 				}
