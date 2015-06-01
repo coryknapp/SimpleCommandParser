@@ -21,14 +21,12 @@ class Command {
 	public:
 		CmdElementType type;
 		std::string value;
-		std::list<CmdElement*> storage;
+		std::list <CmdElement*> storage;
 		
 		CmdElement(){
 		
 		}
 		~CmdElement(){
-			for( CmdElement * e : storage )
-				delete e;
 		}
 		
 		std::string text(){
@@ -61,10 +59,9 @@ class Command {
 		std::vector<std::string> splitList;
 		std::cout << "command = " << command << std::endl;
 		
-		//TODO i tried like hell to get this to work with boost::regex but no luck
-		int lastMark = 0;
+		size_t lastMark = 0;
 		bool quoteMode = false;
-		for( int i = 0; i < command.size(); i++ ){
+		for( size_t i = 0; i < command.size(); i++ ){
 			if( quoteMode ){
 				std::cout << "quote's not currently supported.\n";
 			}
@@ -116,7 +113,7 @@ class Command {
 	}
 
 	static CmdElement * parseTokenList_impl(
-		std::vector<std::string> tl, int &start, int &end,
+		std::vector<std::string> tl, size_t &start, size_t &end,
 		bool implicidList = false
 		){
 		
@@ -144,10 +141,10 @@ class Command {
 
 		// start at start+1 (we know the first element to be a type.)
 		// and run through the whole list, expecting to return before the end
-		for( int i = start+1; i < tl.size(); i++ ){
+		for( size_t i = start+1; i < tl.size(); i++ ){
 			if(( tl[i] == "{" )||( tl[i] == "[" )){
 				// we're opening a new list or map
-				int subEnd;
+				size_t subEnd;
 				ret->storage.push_back( parseTokenList_impl( tl, i, subEnd ) );
 				i = subEnd;
 			} else if(( tl[i] == "}" )||( tl[i] == "]" )){
