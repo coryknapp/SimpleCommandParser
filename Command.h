@@ -11,6 +11,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 
+static int CmdCount = 0;
+
 class Command {
 
 	enum CmdElementType{
@@ -21,14 +23,20 @@ class Command {
 	public:
 		CmdElementType type;
 		std::string value;
-		std::list <CmdElement*> storage;
+		std::vector<CmdElement*> storage;
 		
 		CmdElement(){
-		
+			CmdCount++;
 		}
 		~CmdElement(){
+			std::cout << "list lenght = " << storage.size() << std::endl;
+			for( CmdElement* e : storage ){
+				delete e;
+			}
+			CmdCount--;
+			std::cout << CmdCount << " objects alive" << std::endl;
 		}
-		
+
 		std::string text(){
 			switch( type ){
 				case CmdElementType::value : case CmdElementType::mapKey :
@@ -107,8 +115,8 @@ class Command {
 	static CmdElement * parseTokenList(
 		std::vector<std::string> tl, bool implicidList = false
 		){
-		int start = 0;
-		int end = 0; //
+		size_t start = 0;
+		size_t end = 0; //
 		return parseTokenList_impl( tl, start, end, implicidList );
 	}
 
@@ -116,12 +124,10 @@ class Command {
 		std::vector<std::string> tl, size_t &start, size_t &end,
 		bool implicidList = false
 		){
-		
 		CmdElement * ret = new CmdElement();
 		if( tl[start] == "[" ){
 			//start a map
 			ret->type = CmdElementType::map;
-
 		} else if( tl[start] == "{" ){
 			//start a list
 			ret->type = CmdElementType::list;
@@ -189,7 +195,7 @@ public:
 			);
 	}
 	
-	virtual const std::string& type(){
+	const std::string& type(){
 		return m_type;
 	}
 	
