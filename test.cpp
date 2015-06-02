@@ -6,23 +6,35 @@
 #define TEST( name, expression, expected ) {\
 	std::cout << "Testing " << name << std::endl;\
 	auto result = expression;\
-	if( (bool)result ){\
+	if( result ){\
 		if( expected == *result )\
 			std::cout << "\tsuccess!" << std::endl; \
 		else{ \
-			std::cout << #expression << " returns " << result << std::endl; \
+			std::cout << "FAIL :(" << endl << \
+			#expression << " returns " << *result << std::endl; \
 		} \
 	} else { \
 		std::cout << "nothing found at address" << std::endl; \
 	} \
 }
 
+#define TEST_FOR_NOTHING( name, expression ) {\
+	std::cout << "Testing " << name << std::endl;\
+	auto result = expression;\
+	if( result ){\
+		std::cout << "FAIL :(" << endl << #expression << " returns " << *result << std::endl; \
+	} else {\
+		std::cout << "\tsuccess!" << std::endl; \
+	} \
+}
+
+
 using namespace std;
 
 int main(int argc, char *argv[])
 {
-	//string testString = "test { a , b , c , [foo : 1, bar : 2 ] }";
-	string testString = "request [target:1]";
+	string testString = "test { a , b , c , [foo : 1, bar : 2 ] }";
+	//string testString = "request [target:1]";
 	cout << "running tests on Command with init string:" << endl
 		<< "\t" << testString << std::endl;
 	Command testCmd( testString );
@@ -38,7 +50,7 @@ int main(int argc, char *argv[])
 	string implicidListString = "test x y x";
 	Command * cmdPtr = new Command( implicidListString );
 	TEST(	"get value at 2 (implcid)",
-			cmdPtr->getValueAt<string>("2"), "y" );
+			cmdPtr->getValueAt<string>("1"), "y" );
 
 	delete cmdPtr;
 	return 0;
