@@ -1,12 +1,19 @@
 #include "Command.h"
 //clang++ -std=c++11 test.cpp
 
-#define TEST( name, exp, result ) {\
+#include <boost/optional/optional_io.hpp>
+
+#define TEST( name, expression, expected ) {\
 	std::cout << "Testing " << name << std::endl;\
-	if( exp == result )\
-		std::cout << "\tsuccess!" << std::endl; \
-	else{ \
-		std::cout << #exp << " returns " << exp << std::endl; \
+	auto result = expression;\
+	if( (bool)result ){\
+		if( expected == *result )\
+			std::cout << "\tsuccess!" << std::endl; \
+		else{ \
+			std::cout << #expression << " returns " << result << std::endl; \
+		} \
+	} else { \
+		std::cout << "nothing found at address" << std::endl; \
 	} \
 }
 
@@ -21,15 +28,18 @@ int main(int argc, char *argv[])
 	Command testCmd( testString );
 	cout <<"Reseralizes as " << testCmd.text() << endl;
 
-	TEST( "type", testCmd.type(), "test" );
-	TEST(	"get value at 1", *testCmd.getStringAt("1"), "b" );
+	//TEST( "type", testCmd.type(), "test" );
+	TEST(	"get value at 1", testCmd.getValueAt<string>("1"), "b" );
 	TEST(	"get value at 3/foo",
-			*testCmd.getStringAt("3/foo"), "1" );
+			testCmd.getValueAt<string>("3/foo"), "1" );
 	TEST(	"get value at 3/bar",
-			*testCmd.getStringAt("3/bar"), "2" );
+			testCmd.getValueAt<string>("3/bar"), "2" );
 
 	string implicidListString = "test x y x";
 	Command * cmdPtr = new Command( implicidListString );
-	delete cmdPtr; 
+	TEST(	"get value at 2 (implcid)",
+			cmdPtr->getValueAt<string>("2"), "y" );
+
+	delete cmdPtr;
 	return 0;
 }
