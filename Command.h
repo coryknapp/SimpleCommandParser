@@ -2,19 +2,15 @@
 #define __SimpleCommandParser__Command__
 
 #include <stdio.h>
-#include <map>
 #include <vector>
 #include <string>
 #include <iostream>
-#include <list>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 
-static int CmdCount = 0;
-
 class Command {
-
+	
 	enum CmdElementType{
 		list, map, value, mapKey
 	};
@@ -26,15 +22,11 @@ class Command {
 		std::vector<CmdElement*> storage;
 		
 		CmdElement(){
-			CmdCount++;
 		}
 		~CmdElement(){
-			std::cout << "list lenght = " << storage.size() << std::endl;
 			for( CmdElement* e : storage ){
 				delete e;
 			}
-			CmdCount--;
-			std::cout << CmdCount << " objects alive" << std::endl;
 		}
 
 		std::string text(){
@@ -221,7 +213,6 @@ public:
 			);
 		CmdElement * runner = m_head;
 		for( auto e : pathList ){
-			//std::cout << "looking at " << e << "\n"; 
 			if( runner == nullptr ){
 				return nullptr;
 			} else if( runner->type == CmdElementType::map ){

@@ -22,12 +22,12 @@
 	std::cout << "Testing " << name << std::endl;\
 	auto result = expression;\
 	if( result ){\
-		std::cout << "FAIL :(" << endl << #expression << " returns " << *result << std::endl; \
+		std::cout << "FAIL :(" << endl << \
+		#expression << " returns " << *result << std::endl; \
 	} else {\
 		std::cout << "\tsuccess!" << std::endl; \
 	} \
 }
-
 
 using namespace std;
 
@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
 			testCmd.getValueAt<string>("3/foo"), "1" );
 	TEST(	"get value at 3/bar",
 			testCmd.getValueAt<string>("3/bar"), "2" );
+	TEST_FOR_NOTHING( "Get 3/bazz", testCmd.getValueAt<string>("3/bazz") );
 
 	string implicidListString = "test x y x";
 	Command * cmdPtr = new Command( implicidListString );
