@@ -240,6 +240,8 @@ public:
 				return &(runner->value);
 			}
 		}
+		if( runner->value.empty() )
+			return nullptr;
 		return &(runner->value);
 	}
 	
