@@ -28,6 +28,11 @@ class Command {
 				delete e;
 			}
 		}
+		
+		//copy constructor
+		CmdElement(const CmdElement &other){
+			
+		}
 
 		std::string text(){
 			switch( type ){
@@ -187,6 +192,16 @@ public:
 			);
 	}
 	
+	// copy constructor
+	Command( const Command &other ) = delete; //{}
+
+	// move constructor
+	Command ( Command &&other){
+		m_type = other.m_type;
+		m_head = other.m_head;
+		other.m_head = nullptr;
+	}
+
 	const std::string& type(){
 		return m_type;
 	}
