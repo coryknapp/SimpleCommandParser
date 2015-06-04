@@ -29,9 +29,13 @@ class Command {
 			}
 		}
 		
-		//copy constructor
+		// copy constructor
 		CmdElement(const CmdElement &other){
-			
+			for( CmdElement* e : other.storage ){
+				storage.push_back( new CmdElement( *e ) );
+			}
+			type = other.type;
+			value = other.value;	
 		}
 
 		std::string text(){
@@ -193,7 +197,10 @@ public:
 	}
 	
 	// copy constructor
-	Command( const Command &other ) = delete; //{}
+	Command( const Command &other ){
+		m_type = other.m_type;
+		m_head = new CmdElement( *(other.m_head) );
+	}
 
 	// move constructor
 	Command ( Command &&other){
