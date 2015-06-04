@@ -45,16 +45,18 @@ class Command {
 				case CmdElementType::list : {
 					std::string ret = "{ ";
 					for( auto e : storage ){
-						ret += e->text() + ", "; //TODO cut the last ", " in the ret
+						ret += e->text() + ", ";
 					}
+					ret.resize( ret.size() - 2 );
 					return ret + "} ";
 				}
 				case CmdElementType::map : {
 					std::string ret = "[ ";
 					for( auto e : storage ){
-						ret += e->text() + ": "; //TODO cut the last ", " in the ret
+						ret += e->text() + ": ";
 						ret += e->storage.front()->text() + ", ";
 					}
+					ret.resize( ret.size() - 2 );
 					return ret + "] ";
 				}
 			}
@@ -66,7 +68,6 @@ class Command {
 	
 	static std::vector<std::string> tokenize( const std::string &command){
 		std::vector<std::string> splitList;
-		std::cout << "command = " << command << std::endl;
 		
 		size_t lastMark = 0;
 		bool quoteMode = false;
