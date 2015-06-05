@@ -219,7 +219,7 @@ public:
 	}
 	
 	template <typename T>
-	boost::optional<T> getValueAt( const std::string &path ){
+	boost::optional<T> getValueAt( const std::string &path ) const{
 		std::string * val = getStringAt( path );
 		if( val )
 			return boost::make_optional(
@@ -229,7 +229,7 @@ public:
 			return boost::optional<T>();
 	}
 
-	std::string * getStringAt( const std::string path ){
+	std::string * getStringAt( const std::string path ) const{
 		std::vector<std::string> pathList;
 		boost::split(
 			pathList, path, boost::is_any_of("/"), boost::token_compress_on
