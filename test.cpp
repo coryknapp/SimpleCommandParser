@@ -33,7 +33,7 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-	string testString = "test { a , b , c , [foo : 1, bar : 2 ] }";
+	string testString = "test { a , b , c , [foo : 1, bar : \"x y\" ] }";
 	//string testString = "request [target:1]";
 	cout << "running tests on Command with init string:" << endl
 		<< "\t" << testString << std::endl;
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 	TEST(	"get value at 3/foo",
 			testCmd.getValueAt<string>("3/foo"), "1" );
 	TEST(	"get value at 3/bar",
-			testCmd.getValueAt<string>("3/bar"), "2" );
+			testCmd.getValueAt<string>("3/bar"), "x y" );
 	TEST_FOR_NOTHING( "Get 3/bazz", testCmd.getValueAt<string>("3/bazz") );
 
 	string implicidListString = "test x y x";

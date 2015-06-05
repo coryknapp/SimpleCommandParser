@@ -72,14 +72,21 @@ class Command {
 		size_t lastMark = 0;
 		bool quoteMode = false;
 		for( size_t i = 0; i < command.size(); i++ ){
-			if( quoteMode ){
-				std::cout << "quote's not currently supported.\n";
-			}
 			switch ( command[i] ) {
 				case '\"':
+					if( quoteMode ){
+						if( i != lastMark )
+						splitList.push_back(
+							// start at lastMark+1 to skip the first "
+							command.substr( lastMark+1, i-lastMark-1 )
+							);
+					lastMark = i+1; //skip the space
+					}
 					quoteMode = !quoteMode;
 					break;
 				case ' ':
+					if( quoteMode )
+						break;
 					if( i != lastMark )
 						splitList.push_back(
 							command.substr( lastMark, i-lastMark )
@@ -87,6 +94,8 @@ class Command {
 					lastMark = i+1; //skip the space
 					break;
 				case '[': case ']': case '{': case '}':
+					if( quoteMode )
+						break;
 					if( i != lastMark )
 						splitList.push_back(
 							command.substr( lastMark, i-lastMark )
