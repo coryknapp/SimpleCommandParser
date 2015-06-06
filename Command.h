@@ -10,6 +10,8 @@
 #include <boost/optional.hpp>
 
 class Command {
+
+	typedef std::string value_t;
 	
 	enum CmdElementType{
 		list, map, value, mapKey
@@ -18,11 +20,12 @@ class Command {
 	class CmdElement {
 	public:
 		CmdElementType type;
-		std::string value;
+		value_t value;
 		std::vector<CmdElement*> storage;
 		
 		CmdElement(){
 		}
+
 		~CmdElement(){
 			for( CmdElement* e : storage ){
 				delete e;
@@ -38,12 +41,12 @@ class Command {
 			value = other.value;	
 		}
 
-		std::string text(){
+		value_t text(){
 			switch( type ){
 				case CmdElementType::value : case CmdElementType::mapKey :
 					return value;
 				case CmdElementType::list : {
-					std::string ret = "{ ";
+					value_t ret = "{ ";
 					for( auto e : storage ){
 						ret += e->text() + ", ";
 					}
@@ -51,7 +54,7 @@ class Command {
 					return ret + "} ";
 				}
 				case CmdElementType::map : {
-					std::string ret = "[ ";
+					value_t ret = "[ ";
 					for( auto e : storage ){
 						ret += e->text() + ": ";
 						ret += e->storage.front()->text() + ", ";
@@ -63,11 +66,11 @@ class Command {
 		}
 	};
 	
-	std::string m_type;
+	value_t m_type;
 	CmdElement * m_head;
 	
-	static std::vector<std::string> tokenize( const std::string &command){
-		std::vector<std::string> splitList;
+	static std::vector<value_t> tokenize( const value_t &command){
+		std::vector<value_t> splitList;
 		
 		size_t lastMark = 0;
 		bool quoteMode = false;
@@ -124,7 +127,7 @@ class Command {
 	};
 	
 	static CmdElement * parseTokenList(
-		std::vector<std::string> tl, bool implicidList = false
+		std::vector<value_t> tl, bool implicidList = false
 		){
 		size_t start = 0;
 		size_t end = 0; //
@@ -132,7 +135,7 @@ class Command {
 	}
 
 	static CmdElement * parseTokenList_impl(
-		std::vector<std::string> tl, size_t &start, size_t &end,
+		std::vector<value_t> tl, size_t &start, size_t &end,
 		bool implicidList = false
 		){
 		CmdElement * ret = new CmdElement();
@@ -198,11 +201,11 @@ public:
 		delete m_head;
 	}
 	
-	Command(const std::string &command){
-		std::vector<std::string> splitList = tokenize( command );
+	Command(const value_t &command){
+		std::vector<value_t> splitList = tokenize( command );
 		m_type = splitList[0];
 		m_head = parseTokenList(
-			std::vector<std::string>( ++splitList.begin(), splitList.end() )
+			std::vector<value_t>( ++splitList.begin(), splitList.end() )
 			);
 	}
 	
@@ -219,17 +222,17 @@ public:
 		other.m_head = nullptr;
 	}
 
-	const std::string& type(){
+	const value_t& type(){
 		return m_type;
 	}
 	
-	std::string text(){
+	value_t text(){
 		return type() + " " + m_head->text();
 	}
 	
 	template <typename T>
-	boost::optional<T> getValueAt( const std::string &path ) const{
-		std::string * val = getStringAt( path );
+	boost::optional<T> getValueAt( const value_t &path ) const{
+		value_t * val = getStringAt( path );
 		if( val )
 			return boost::make_optional(
 				boost::lexical_cast<T>( *val )
@@ -238,8 +241,8 @@ public:
 			return boost::optional<T>();
 	}
 
-	std::string * getStringAt( const std::string path ) const{
-		std::vector<std::string> pathList;
+	value_t * getStringAt( const value_t path ) const{
+		std::vector<value_t> pathList;
 		boost::split(
 			pathList, path, boost::is_any_of("/"), boost::token_compress_on
 			);
