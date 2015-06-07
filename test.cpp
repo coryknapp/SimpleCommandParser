@@ -10,7 +10,7 @@
 		if( expected == *result )\
 			std::cout << "\tsuccess!" << std::endl; \
 		else{ \
-			std::cout << "FAIL :(" << endl << \
+			std::cout << "\tFAIL :(" << endl << \
 			#expression << " returns " << *result << std::endl; \
 		} \
 	} else { \
@@ -22,7 +22,7 @@
 	std::cout << "Testing " << name << std::endl;\
 	auto result = expression;\
 	if( result ){\
-		std::cout << "FAIL :(" << endl << \
+		std::cout << "\tFAIL :(" << endl << \
 		#expression << " returns " << *result << std::endl; \
 	} else {\
 		std::cout << "\tsuccess!" << std::endl; \
