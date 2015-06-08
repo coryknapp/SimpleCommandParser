@@ -11,10 +11,10 @@
 			std::cout << "\tsuccess!" << std::endl; \
 		else{ \
 			std::cout << "\tFAIL :(" << endl << \
-			#expression << " returns " << *result << std::endl; \
+			"\t" << #expression << " returns " << *result << std::endl; \
 		} \
 	} else { \
-		std::cout << "nothing found at address" << std::endl; \
+		std::cout << "\tnothing found at address" << std::endl; \
 	} \
 }
 
@@ -23,7 +23,7 @@
 	auto result = expression;\
 	if( result ){\
 		std::cout << "\tFAIL :(" << endl << \
-		#expression << " returns " << *result << std::endl; \
+		"\t" << #expression << " returns " << *result << std::endl; \
 	} else {\
 		std::cout << "\tsuccess!" << std::endl; \
 	} \
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 	TEST_FOR_NOTHING( "Get 3/bazz", testCmd.getValueAt<string>("3/bazz") );
 
 	string implicidListString = "test x y x";
-	Command * cmdPtr = new Command( implicidListString );
+	Command * cmdPtr = new Command( implicidListString, true );
 	TEST(	"get value at 2 (implcid)",
 			cmdPtr->getValueAt<string>("1"), "y" );
 

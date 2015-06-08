@@ -130,12 +130,12 @@ class Command {
 		std::vector<std::string> tl, bool implicidList = false
 		){
 		size_t start = 0;
-		size_t end = 0; //
+		size_t end = tl.size(); //
 		return parseTokenList_impl( tl, start, end, implicidList );
 	}
 
 	static CmdElement * parseTokenList_impl(
-		std::vector<vstd::string> tl, size_t &start, size_t &end,
+		std::vector<std::string> tl, size_t &start, size_t &end,
 		bool implicidList = false
 		){
 		CmdElement * ret = new CmdElement();
@@ -149,9 +149,11 @@ class Command {
 			// just a value
 			ret->type = CmdElementType::value;
 			ret->value = tl[start];
+			std::cout << "adding value "<<start << "-" << end << std::endl;
 			if( end - start > 1 ){
 				if( implicidList ){
 					std::cout << "implicid list not supported yet.\n";
+					
 				} else { // TODO handle this better
 					std::cout << "Warning: values past the first are being ignored.\n";
 				}
@@ -165,7 +167,9 @@ class Command {
 			if(( tl[i] == "{" )||( tl[i] == "[" )){
 				// we're opening a new list or map
 				size_t subEnd;
-				ret->storage.push_back( parseTokenList_impl( tl, i, subEnd ) );
+				ret->storage.push_back(
+					parseTokenList_impl( tl, i, subEnd, implicidList )
+					);
 				i = subEnd;
 			} else if(( tl[i] == "}" )||( tl[i] == "]" )){
 				// we've found the end out our list/map
@@ -195,18 +199,43 @@ class Command {
 		return ret;
 	}
 	
+	static CmdElement * parseTokenList_impl_implicit(
+			std::vector<std::string> tl,
+			size_t &start,
+			size_t &end){
+		//first determine if we are gonna make a map or a list
+		//a map would have a leading '-' char.
+		if( tl[start][0] == '-' ){
+			
+		} else { //normal list
+			// just put everything in the token list into a new cmd element list
+			CmdElement * ret = new CmdElement();
+			ret->type = CmdElementType::list;
+			for( std::string &token : tl ){
+				CmdElement * adder = new CmdElement();
+				adder->value = token;
+				adder->type = CmdElementType::value;
+				ret->storage.push_back( adder );
+			}
+			return ret;
+		}
+		return nullptr;
+	}
+
+
+
 public:
 
 	~Command(){
 		delete m_head;
 	}
 	
-	Command(const std::string &command){
+	Command(const std::string &command, bool implicidLists = false){
 		std::vector<std::string> splitList = tokenize( command );
 		m_type = splitList[0];
 		m_head = parseTokenList(
-			std::vector<std::string>( ++splitList.begin(), splitList.end() )
-			);
+			std::vector<std::string>( ++splitList.begin(), splitList.end() ),
+			implicidLists);
 	}
 	
 	// copy constructor
