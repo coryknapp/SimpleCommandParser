@@ -152,8 +152,7 @@ class Command {
 			std::cout << "adding value "<<start << "-" << end << std::endl;
 			if( end - start > 1 ){
 				if( implicidList ){
-					std::cout << "implicid list not supported yet.\n";
-					
+					return parseTokenList_impl_implicit( tl, start, end );	
 				} else { // TODO handle this better
 					std::cout << "Warning: values past the first are being ignored.\n";
 				}
