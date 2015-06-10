@@ -11,31 +11,33 @@
 
 class Command {
 
+	// internally we'll use this data type to store our values
 	typedef std::string value_t;
 	
-	enum CmdElementType{
+	// enumeration to declare what type each node is
+	enum CmdNodeType{
 		list, map, value, mapKey
 	};
 	
-	class CmdElement {
+	class CmdNode {
 	public:
-		CmdElementType type;
+		CmdNodeType type;
 		value_t value;
-		std::vector<CmdElement*> storage;
+		std::vector<CmdNode*> storage;
 		
-		CmdElement(){
+		CmdNode(){
 		}
 
-		~CmdElement(){
-			for( CmdElement* e : storage ){
+		~CmdNode(){
+			for( CmdNode* e : storage ){
 				delete e;
 			}
 		}
 		
 		// copy constructor
-		CmdElement(const CmdElement &other){
-			for( CmdElement* e : other.storage ){
-				storage.push_back( new CmdElement( *e ) );
+		CmdNode(const CmdNode &other){
+			for( CmdNode* e : other.storage ){
+				storage.push_back( new CmdNode( *e ) );
 			}
 			type = other.type;
 			value = other.value;	
@@ -43,9 +45,9 @@ class Command {
 
 		std::string text(){
 			switch( type ){
-				case CmdElementType::value : case CmdElementType::mapKey :
+				case CmdNodeType::value : case CmdNodeType::mapKey :
 					return value;
-				case CmdElementType::list : {
+				case CmdNodeType::list : {
 					std::string ret = "{ ";
 					for( auto e : storage ){
 						ret += e->text() + ", ";
@@ -53,7 +55,7 @@ class Command {
 					ret.resize( ret.size() - 2 );
 					return ret + "} ";
 				}
-				case CmdElementType::map : {
+				case CmdNodeType::map : {
 					std::string ret = "[ ";
 					for( auto e : storage ){
 						ret += e->text() + ": ";
@@ -67,7 +69,7 @@ class Command {
 	};
 	
 	std::string m_type;
-	CmdElement * m_head;
+	CmdNode * m_head;
 	
 	static std::vector<std::string> tokenize( const std::string &command){
 		std::vector<std::string> splitList;
@@ -126,7 +128,7 @@ class Command {
 		return splitList;
 	};
 	
-	static CmdElement * parseTokenList(
+	static CmdNode * parseTokenList(
 		std::vector<std::string> tl, bool implicidList = false
 		){
 		size_t start = 0;
@@ -134,32 +136,31 @@ class Command {
 		return parseTokenList_impl( tl, start, end, implicidList );
 	}
 
-	static CmdElement * parseTokenList_impl(
+	static CmdNode * parseTokenList_impl(
 		std::vector<std::string> tl, size_t &start, size_t &end,
 		bool implicidList = false
 		){
-		CmdElement * ret = new CmdElement();
+		CmdNode * ret = new CmdNode();
 		if( tl[start] == "[" ){
 			//start a map
-			ret->type = CmdElementType::map;
+			ret->type = CmdNodeType::map;
 		} else if( tl[start] == "{" ){
 			//start a list
-			ret->type = CmdElementType::list;
+			ret->type = CmdNodeType::list;
 		} else {
 			// just a value
-			ret->type = CmdElementType::value;
+			ret->type = CmdNodeType::value;
 			ret->value = tl[start];
-			std::cout << "adding value "<<start << "-" << end << std::endl;
 			if( end - start > 1 ){
 				if( implicidList ){
 					return parseTokenList_impl_implicit( tl, start, end );	
 				} else { // TODO handle this better
 					std::cout << "Warning: values past the first are being ignored.\n";
 				}
+			
+				return ret;
 			}
-			return ret;
 		}
-
 		// start at start+1 (we know the first element to be a type.)
 		// and run through the whole list, expecting to return before the end
 		for( size_t i = start+1; i < tl.size(); i++ ){
@@ -168,37 +169,38 @@ class Command {
 				size_t subEnd;
 				ret->storage.push_back(
 					parseTokenList_impl( tl, i, subEnd, implicidList )
-					);
-				i = subEnd;
+				);
+			i = subEnd;
+			
 			} else if(( tl[i] == "}" )||( tl[i] == "]" )){
 				// we've found the end out our list/map
 				end = i;
 				return ret;				
 			} else {
 				// we've found a value, or a key/value pair
-				if( ret->type == CmdElementType::list ){
-					CmdElement * valueElement = new CmdElement();
-					valueElement->type = CmdElementType::value;
-					valueElement->value = tl[i];
-					ret->storage.push_back( valueElement );
-				} else if( ret->type == CmdElementType::map ){
-					CmdElement * mapKey = new CmdElement();
-					CmdElement * mapValue = new CmdElement();
+				if( ret->type == CmdNodeType::list ){
+					CmdNode * valueNode = new CmdNode();
+					valueNode->type = CmdNodeType::value;
+					valueNode->value = tl[i];
+					ret->storage.push_back( valueNode );
+				} else if( ret->type == CmdNodeType::map ){
+					CmdNode * mapKey = new CmdNode();
+					CmdNode * mapValue = new CmdNode();
 					mapKey->value = tl[i];
 					i++;
-					mapKey->type = CmdElementType::mapKey;
+					mapKey->type = CmdNodeType::mapKey;
 					mapValue->value = tl[i];
-					mapValue->type = CmdElementType::value;
+					mapValue->type = CmdNodeType::value;
 					mapKey->storage.push_back( mapValue );
 					ret->storage.push_back( mapKey );
 				}
 			}
-			
+	
 		}
 		return ret;
 	}
 	
-	static CmdElement * parseTokenList_impl_implicit(
+	static CmdNode * parseTokenList_impl_implicit(
 			std::vector<std::string> tl,
 			size_t &start,
 			size_t &end){
@@ -208,12 +210,12 @@ class Command {
 			
 		} else { //normal list
 			// just put everything in the token list into a new cmd element list
-			CmdElement * ret = new CmdElement();
-			ret->type = CmdElementType::list;
+			CmdNode * ret = new CmdNode();
+			ret->type = CmdNodeType::list;
 			for( std::string &token : tl ){
-				CmdElement * adder = new CmdElement();
+				CmdNode * adder = new CmdNode();
 				adder->value = token;
-				adder->type = CmdElementType::value;
+				adder->type = CmdNodeType::value;
 				ret->storage.push_back( adder );
 			}
 			return ret;
@@ -240,7 +242,7 @@ public:
 	// copy constructor
 	Command( const Command &other ){
 		m_type = other.m_type;
-		m_head = new CmdElement( *(other.m_head) );
+		m_head = new CmdNode( *(other.m_head) );
 	}
 
 	// move constructor
@@ -274,18 +276,18 @@ public:
 		boost::split(
 			pathList, path, boost::is_any_of("/"), boost::token_compress_on
 			);
-		CmdElement * runner = m_head;
+		CmdNode * runner = m_head;
 		for( auto e : pathList ){
 			if( runner == nullptr ){
 				return nullptr;
-			} else if( runner->type == CmdElementType::map ){
+			} else if( runner->type == CmdNodeType::map ){
 				for( auto subE : runner->storage ){ // TODO search much smarter
 					if( subE->value == e ){
 						runner = subE->storage.front();
 						break;
 					}
 				}
-			} else if( runner->type == CmdElementType::list ){
+			} else if( runner->type == CmdNodeType::list ){
 				int index = boost::lexical_cast<int>( e );
 				runner = runner->storage[ index ];
 			} else {
