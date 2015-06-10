@@ -14,27 +14,31 @@ class Command {
 	// internally we'll use this data type to store our values
 	typedef std::string value_t;
 	
-	// enumeration to declare what type each node is
+	// enumeration to declare each nodes "type".
 	enum CmdNodeType{
 		list, map, value, mapKey
 	};
 	
+	// Node class acts as a node in our internal graph of each Command object
 	class CmdNode {
 	public:
 		CmdNodeType type;
 		value_t value;
 		std::vector<CmdNode*> storage;
 		
-		CmdNode(){
-		}
+		// nothing to initialize.  IIRA as fuck.
+		//CmdNode(){
+		//}
 
 		~CmdNode(){
 			for( CmdNode* e : storage ){
+				// each storage is allocated with a new so we have to clean it
+				// up here
 				delete e;
 			}
 		}
 		
-		// copy constructor
+		// copy constructor - makes a deep copy, duplicating all nodes.
 		CmdNode(const CmdNode &other){
 			for( CmdNode* e : other.storage ){
 				storage.push_back( new CmdNode( *e ) );
@@ -43,6 +47,8 @@ class Command {
 			value = other.value;	
 		}
 
+		// reserializes the command into text
+		// TODO: handle values with spaces
 		std::string text(){
 			switch( type ){
 				case CmdNodeType::value : case CmdNodeType::mapKey :
@@ -68,13 +74,19 @@ class Command {
 		}
 	};
 	
+	// here, type is the command name
 	std::string m_type;
+
+	// root node.  May be null.
 	CmdNode * m_head;
 	
+	// takes a string and divides it into meaning full chucks of either input or
+	// formating info.
 	static std::vector<std::string> tokenize( const std::string &command){
-		std::vector<std::string> splitList;
-		
+
+		std::vector<std::string> splitList;		
 		size_t lastMark = 0;
+
 		bool quoteMode = false;
 		for( size_t i = 0; i < command.size(); i++ ){
 			switch ( command[i] ) {
