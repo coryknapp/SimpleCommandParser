@@ -27,8 +27,8 @@ class Command {
 		std::vector<CmdNode*> storage;
 		
 		// nothing to initialize.  IIRA as fuck.
-		//CmdNode(){
-		//}
+		CmdNode(){
+		}
 
 		~CmdNode(){
 			for( CmdNode* e : storage ){
