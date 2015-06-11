@@ -264,11 +264,11 @@ public:
 		other.m_head = nullptr;
 	}
 
-	const std::string& type(){
+	const std::string& type() const{
 		return m_type;
 	}
 	
-	std::string text(){
+	std::string text() const{
 		return type() + " " + m_head->text();
 	}
 	
