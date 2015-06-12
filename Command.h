@@ -52,7 +52,10 @@ class Command {
 		std::string text(){
 			switch( type ){
 				case CmdNodeType::value : case CmdNodeType::mapKey :
-					return value;
+					if( value.find(' ') == std::string::npos )
+						return value;
+					else
+						return "\""+value+"\"";
 				case CmdNodeType::list : {
 					std::string ret = "{ ";
 					for( auto e : storage ){
